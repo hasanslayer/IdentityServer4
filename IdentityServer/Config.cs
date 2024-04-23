@@ -21,7 +21,35 @@ namespace IdentityServer
                         },
                         AllowedScopes = { "movieAPI" } // as the name in ApiScopes static list 
                    },
+                new Client
+                   {
+                       ClientId = "movies_mvc_client",
+                       ClientName = "Movies MVC Web App",
+                       AllowedGrantTypes = GrantTypes.Code,
+                       RequirePkce = false,
+                       AllowRememberConsent = false,
+                       RedirectUris = new List<string>()
+                       {
+                           "https://localhost:5002/signin-oidc"
+                       },
+                       PostLogoutRedirectUris = new List<string>()
+                       {
+                           "https://localhost:5002/signout-callback-oidc"
+                       },
+                       ClientSecrets = new List<Secret>
+                       {
+                           new Secret("secret".Sha256())
+                       },
+                       AllowedScopes = new List<string>
+                       {
+                           IdentityServerConstants.StandardScopes.OpenId,
+                           IdentityServerConstants.StandardScopes.Profile,
+
+                       }
+                }
             };
+
+
 
         public static IEnumerable<ApiScope> ApiScopes =>
            new ApiScope[]
@@ -37,11 +65,24 @@ namespace IdentityServer
         public static IEnumerable<IdentityResource> IdentityResources =>
           new IdentityResource[]
           {
+              new IdentityResources.OpenId(),
+              new IdentityResources.Profile(),
           };
 
         public static List<TestUser> TestUsers =>
             new List<TestUser>
             {
+                new TestUser
+                {
+                    SubjectId = "5BE86359-073C-434B-AD2D-A3932222DABE",
+                    Username = "hasan",
+                    Password = "h123456",
+                    Claims = new List<Claim>
+                    {
+                        new Claim(JwtClaimTypes.GivenName, "hasan"),
+                        new Claim(JwtClaimTypes.FamilyName, "darwish")
+                    }
+                }
             };
     }
 }
