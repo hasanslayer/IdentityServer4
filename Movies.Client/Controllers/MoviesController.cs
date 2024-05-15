@@ -26,7 +26,7 @@ namespace Movies.Client.Controllers
         {
             await LogTokenAndClaims();
 
-            return _movieApiService.GetMovies() != null ?
+            return await _movieApiService.GetMovies() != null ?
                         View(await _movieApiService.GetMovies()) :
                         Problem("Entity set 'MoviesClientContext.Movie'  is null.");
         }
