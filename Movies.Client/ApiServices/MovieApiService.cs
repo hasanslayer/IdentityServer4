@@ -1,4 +1,6 @@
 ﻿using IdentityModel.Client;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Movies.Client.Models;
 using Newtonsoft.Json;
 
@@ -8,10 +10,47 @@ namespace Movies.Client.ApiServices
     {
 
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpContextAccessor _contextAccessor;
 
-        public MovieApiService(IHttpClientFactory httpClientFactory)
+        public MovieApiService(IHttpClientFactory httpClientFactory, IHttpContextAccessor contextAccessor)
         {
             _httpClientFactory = httpClientFactory;
+            _contextAccessor = contextAccessor;
+        }
+
+        public async Task<UserInfoViewModel> GetUserInfo()
+        {
+            var idpClient = _httpClientFactory.CreateClient("IDPClient");
+
+            var metaDataResponse = await idpClient.GetDiscoveryDocumentAsync();
+
+            if (metaDataResponse.IsError)
+            {
+                throw new HttpRequestException("Something went wrong while requesting access token.");
+            }
+
+            var accessToken = await _contextAccessor.HttpContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+
+            var userInfoResponse = await idpClient.GetUserInfoAsync( // from Identity server 4
+                new UserInfoRequest
+                {
+                    Address = metaDataResponse.UserInfoEndpoint,
+                    Token = accessToken
+                });
+
+            if (userInfoResponse.IsError)
+            {
+                throw new HttpRequestException("Something went wrong while getting user info.");
+            }
+
+            var userInfoDictionary = new Dictionary<string, string>();
+
+            foreach (var claim in userInfoResponse.Claims)
+            {
+                userInfoDictionary.Add(claim.Type, claim.Value);
+            }
+
+            return new UserInfoViewModel(userInfoDictionary);
         }
 
         public Task<Movie> CreateMovie(Movie movie)
@@ -98,6 +137,8 @@ namespace Movies.Client.ApiServices
 
             //return movieList;
         }
+
+
 
         public Task<Movie> UpdateMovie(Movie movie)
         {
