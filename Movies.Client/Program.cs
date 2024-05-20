@@ -1,6 +1,9 @@
-﻿using IdentityModel.Client;
+﻿using IdentityModel;
+using IdentityModel.Client;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using Movies.Client.ApiServices;
 using Movies.Client.HttpHandlers;
@@ -24,13 +27,24 @@ builder.Services.AddAuthentication(options =>
         options.ClientSecret = "secret";
         options.ResponseType = "code id_token"; // hybrid flow
 
-        options.Scope.Add("openid");
-        options.Scope.Add("profile");
+        //options.Scope.Add("openid"); automatically added by OpenId
+        //options.Scope.Add("profile"); automatically added by OpenId
+        options.Scope.Add("email");
+        options.Scope.Add("address");
         options.Scope.Add("movieAPI");
+        options.Scope.Add("roles");
+
+        options.ClaimActions.MapUniqueJsonKey("role", "role");
 
         options.SaveTokens = true;
 
         options.GetClaimsFromUserInfoEndpoint = true;
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            NameClaimType = JwtClaimTypes.GivenName,
+            RoleClaimType = JwtClaimTypes.Role,
+        };
 
     });
 

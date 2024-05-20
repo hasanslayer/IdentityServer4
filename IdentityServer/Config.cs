@@ -44,7 +44,10 @@ namespace IdentityServer
                        {
                            IdentityServerConstants.StandardScopes.OpenId,
                            IdentityServerConstants.StandardScopes.Profile,
-                           "movieAPI"
+                           IdentityServerConstants.StandardScopes.Email,
+                           IdentityServerConstants.StandardScopes.Address,
+                           "movieAPI",
+                           "roles"
 
                        }
                 }
@@ -68,6 +71,9 @@ namespace IdentityServer
           {
               new IdentityResources.OpenId(),
               new IdentityResources.Profile(),
+              new IdentityResources.Email(),
+              new IdentityResources.Address(),
+              new IdentityResource("roles","Your role(s)",new List<string>(){"role"})
           };
 
         public static List<TestUser> TestUsers =>
